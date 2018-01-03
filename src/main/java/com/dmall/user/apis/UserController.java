@@ -30,6 +30,23 @@ public class UserController extends HttpFacadeBaseClass {
         this.contactRepository = contactRepository;
     }
 
+    @Transactional
+    @PostMapping(path="",  produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiForResponse<UserDTO> createOrder(@RequestBody User user) {
+        List<Role> roles = user.getRoles().stream().map(role -> {
+            role.setUser(user);
+            return role;
+        }).collect(Collectors.toList());
+
+        user.setRoles(roles);
+
+        User savedUser = userRepository.save(user);
+        UserDTO userDTO = new UserDTO(user);
+
+
+        ApiForResponse<UserDTO> userApiForResponse = new ApiForResponse<>(savedUser.getId(), userDTO);
+        return userApiForResponse;
+    }
 
     @Transactional
     @GetMapping("/{id}")
@@ -52,5 +69,14 @@ public class UserController extends HttpFacadeBaseClass {
     }
 
 
+    @Transactional
+    @PostMapping(path="/{id}/contacts",  produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiForResponse<Contact> createOrder(@PathVariable("id") final long userId, @RequestBody Contact contact) {
+
+        Contact result = contactRepository.save(contact);
+
+        ApiForResponse<Contact> contactApiForResponse = new ApiForResponse<>(-1L, result);
+        return contactApiForResponse;
+    }
 }
 
